@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@types/node": "^14.14.37",
+    "@types/node-fetch": "^2.5.8",
+    "node-fetch": "^2.6.1",
+    "typescript": "^4.2.3"
+  },
+  "name": "synergismautoquarkboostupdate",
+  "description": "Auto update the quark boost for Synergism.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pm2 start -n SynQuarkBoost index.js"
+  },
+  "author": "Khafra",
+  "license": "MIT"
+}
