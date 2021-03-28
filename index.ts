@@ -67,6 +67,16 @@ const sendWebhook = async (message: string) => {
     });
 }
 
+const getCurrentBoost = async () => {
+    const p = await fetch(`https://api.github.com/gists/${process.env.GIST_ID}`, {
+        headers: {
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    });
+    const j = await p.json(); // todo: interface?
+    lastPledgeAmountCents = Number(j.files['SynergismQuarkBoost.txt'].content) * 1000;
+}
+
 const fetchPatreon = async () => {
     const r = await fetch('https://www.patreon.com/api/campaigns/4926360', {
         headers: {
@@ -93,6 +103,8 @@ const fetchPatreon = async () => {
 const updateGist = async () => {
     if (!process.env.GIST_ID || !process.env.GITHUB_ACCESS_TOKEN)
         await readEnv();
+    if (lastPledgeAmountCents === 0)
+        await getCurrentBoost();
 
     const shouldUpdateGist = await fetchPatreon();
     if (typeof shouldUpdateGist !== 'boolean') { // error; bad response
