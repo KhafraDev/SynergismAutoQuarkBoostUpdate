@@ -87,11 +87,11 @@ const fetchPatreon = async () => {
     if (!r.ok) return;
 
     const j = await r.json() as PatreonCampaign;
-    if (j.data.attributes.campaign_pledge_sum > lastPledgeAmountCents) { // someone donated
+    if (j.data.attributes.campaign_pledge_sum !== lastPledgeAmountCents) { // someone donated
         const lastBonus = Math.floor(lastPledgeAmountCents / 100 / 10); // cents -> dollars -> bonus
         const nowBonus = Math.floor(j.data.attributes.campaign_pledge_sum / 100 / 10); // same as above
 
-        if (nowBonus > lastBonus) { // went over $10 threshold 
+        if (nowBonus !== lastBonus) { // went over $10 threshold 
             lastPledgeAmountCents = j.data.attributes.campaign_pledge_sum;
             return true;
         }
@@ -108,10 +108,12 @@ const updateGist = async () => {
 
     const shouldUpdateGist = await fetchPatreon();
     if (typeof shouldUpdateGist !== 'boolean') { // error; bad response
+        console.log(`\x1b[31m%s\x1b[0m`, 'Failed to fetch the Patreon API!');
         return sendWebhook('Failed to fetch Patreon API. 😕');
     }
 
     if (shouldUpdateGist === true) {
+        console.log(`\x1b[32m%s\x1b[0m`, 'Updating the gist @ ', new Date());
         return await fetch(`https://api.github.com/gists/${process.env.GIST_ID}`, {
             method: 'PATCH',
             body: JSON.stringify({
@@ -128,12 +130,15 @@ const updateGist = async () => {
             }
         });
     }
+
+    console.log(`\x1b[35m%s\x1b[0m`, 'Did not update, skipped!');
 }
 
 const loop = async () => {
     try {
         await updateGist();
     } catch (e) {
+        console.log(`\x1b[31m%s\x1b[0m`, e);
         return sendWebhook(e.toString());
     }
 }
