@@ -1,5 +1,5 @@
 import { readFile } from 'fs/promises';
-import fetch from 'node-fetch';
+import { fetch } from 'undici';
 
 interface PatreonCampaign {
     data: {
@@ -73,8 +73,8 @@ const getCurrentBoost = async () => {
             'Accept': 'application/vnd.github.v3+json'
         }
     });
-    const j = await p.json(); // todo: interface?
-    lastPledgeAmountCents = Number(j.files['SynergismQuarkBoost.txt'].content) * 1000;
+    const j = await p.json() as { files: { [key: string]: { content: string } } }
+    lastPledgeAmountCents = Number(j.files['SynergismQuarkBoost.txt']!.content) * 1000;
 }
 
 const fetchPatreon = async () => {
@@ -137,9 +137,11 @@ const updateGist = async () => {
 const loop = async () => {
     try {
         await updateGist();
-    } catch (e) {
+    } catch (e: unknown) {
         console.log(`\x1b[31m%s\x1b[0m`, e);
-        return sendWebhook(e.toString());
+        if (e instanceof Error) {
+            return sendWebhook(e.toString());
+        }
     }
 }
 
